@@ -1,0 +1,12 @@
+[
+  {
+    "model": "central.Job",
+    "fields": {
+      "section": "student",
+      "common_id": "1.1",
+      "description": "",
+      "dimension": "Академический час",
+      "factor": 1
+    }
+  }
+]
