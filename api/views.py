@@ -1,7 +1,8 @@
 import psycopg2
 from django.shortcuts import get_object_or_404
+from django.utils.translation import gettext as _
 from rest_framework import status, viewsets
-from rest_framework.generics import CreateAPIView, RetrieveAPIView
+from rest_framework.generics import CreateAPIView
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -15,10 +16,14 @@ class CreateLoadView(CreateAPIView):
     serializer_class = api_serializers.DisciplineLoadSerializer
 
     def get_additional_load_method(self, name):
-        # Implementation for additional methods has to be done
-        def noop(val, add):
-            return val
-        return noop
+        return getattr(central_models.Job, name)
+
+    def get_validators(self, names):
+        return [getattr(central_models.Job, name) for name in names]
+
+    def validated(self, input_value, methods, values):
+        validator_methods = self.get_validators(methods)
+        return all([method(input_value, value) for method, value in zip(validator_methods, values)])
 
     def do_create(self, data, result_data):
         for ind, job in enumerate(data['jobs']):
@@ -34,6 +39,9 @@ class CreateLoadView(CreateAPIView):
         response_data = {}
         for job in jobs:
             job_instance = get_object_or_404(central_models.Job, pk=job['id'])
+            if not self.validated(job['input_value'], job_instance.validator_methods, job_instance.validator_values):
+                return Response(data={'detail': _('Input value invalid. Validation failure')},
+                                status=status.HTTP_400_BAD_REQUEST)
             value = job['input_value'] * job_instance.factor
             method = self.get_additional_load_method(job_instance.additional_load_method)
             value = method(value, job_instance.additional_method_value)

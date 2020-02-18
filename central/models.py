@@ -10,7 +10,7 @@ class TimeCreationMixin(models.Model):
     class Meta:
         abstract = True
 
-    created_at = models.DateTimeField(verbose_name=_('Created at'), null=False, blank=False, auto_now_add=True)
+    created_at = models.DateTimeField(verbose_name=_('Created at'), null=True, blank=False, auto_now_add=True)
 
 
 class Job(TimeCreationMixin):
@@ -57,12 +57,39 @@ class Job(TimeCreationMixin):
     factor = models.FloatField(verbose_name=_('Factor'), null=False, blank=False)
     additional_load_method = models.CharField(max_length=256, null=True, blank=True)
     additional_method_value = models.FloatField(null=True, blank=True)
-    validator_methods = ArrayField(max_length=5, base_field=models.CharField(max_length=256), default=list)
-    validator_values = ArrayField(max_length=5, base_field=models.FloatField(), default=list)
+    validator_methods = ArrayField(max_length=5, base_field=models.CharField(max_length=256), default=list, blank=True)
+    validator_values = ArrayField(max_length=5, base_field=models.FloatField(), default=list, blank=True)
 
     def __str__(self):
         return f"({self.id}), {_('Relate to')} {self.dimension}, {_('Factor')} {self.factor}"
 
+    @staticmethod
+    def add_value(source, additional):
+        return source + additional
+
+    @staticmethod
+    def substr_value(source, additional):
+        return source - additional
+
+    @staticmethod
+    def is_eql(source, value):
+        return source == value
+
+    @staticmethod
+    def is_less_or_eql(source, value):
+        return source <= value
+
+    @staticmethod
+    def is_less(source, value):
+        return source < value
+
+    @staticmethod
+    def is_greater_or_eql(source, value):
+        return source >= value
+
+    @staticmethod
+    def is_greater(source, value):
+        return source > value
 
 class Discipline(models.Model):
 
