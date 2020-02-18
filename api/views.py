@@ -1,7 +1,9 @@
+import psycopg2
 from django.shortcuts import get_object_or_404
 from rest_framework import status, viewsets
-from rest_framework.generics import CreateAPIView
+from rest_framework.generics import CreateAPIView, RetrieveAPIView
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from api import serializers as api_serializers
 from central import models as central_models
@@ -44,3 +46,14 @@ class JobViewSet(viewsets.ModelViewSet):
 
     queryset = central_models.Job.objects.all()
     serializer_class = api_serializers.JobSerializer
+
+
+class TestSecondDBView(APIView):
+
+    def get(self, request, *args, **kwargs):
+        conn = psycopg2.connect(dbname='lmmjpniy', user='lmmjpniy', password='xKzHUkcdr42O0se2nyMc-zhEVuggvBoj',
+                                host='rajje.db.elephantsql.com')
+        with conn.cursor() as cursor:
+            cursor.execute('SELECT * FROM test_table')
+            line = '\n'.join([str(row) for row in cursor])
+        return Response(data=line)
