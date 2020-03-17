@@ -37,7 +37,7 @@ class DisciplineSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         instance, _ = central_models.Discipline.objects.update_or_create(name=validated_data['name'],
-                                                                         semesters=validated_data['semesters'],
+                                                                         semester=validated_data['semester'],
                                                                          defaults=validated_data)
         return instance
 
@@ -63,7 +63,7 @@ class DisciplineLoadSerializer(serializers.Serializer):
         },
         'discipline': {
             'name'
-            'semesters'
+            'semester'
         },
         'jobs': [
             {

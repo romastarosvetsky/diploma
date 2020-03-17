@@ -1,8 +1,10 @@
-import psycopg2
+from django.contrib.auth import authenticate
 from django.shortcuts import get_object_or_404
 from django.utils.translation import gettext as _
 from rest_framework import status, viewsets
+from rest_framework.authtoken.models import Token
 from rest_framework.generics import CreateAPIView
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -14,12 +16,17 @@ class CreateLoadView(CreateAPIView):
 
     queryset = central_models.Load.objects.all()
     serializer_class = api_serializers.DisciplineLoadSerializer
+    permission_classes = [IsAuthenticated, ]
 
     def get_additional_load_method(self, name):
-        return getattr(central_models.Job, name)
+        def noop(value, *args):
+            return value
+        if not isinstance(name, str):
+            return noop
+        return getattr(central_models.Job, name, noop)
 
     def get_validators(self, names):
-        return [getattr(central_models.Job, name) for name in names]
+        return [getattr(central_models.Job, name, lambda *args: True) if isinstance(name, str) else lambda *args: True for name in names]
 
     def validated(self, input_value, methods, values):
         validator_methods = self.get_validators(methods)
@@ -54,14 +61,17 @@ class JobViewSet(viewsets.ModelViewSet):
 
     queryset = central_models.Job.objects.all()
     serializer_class = api_serializers.JobSerializer
+    permission_classes = [IsAuthenticated, ]
 
 
-class TestSecondDBView(APIView):
+class LogInAPIView(APIView):
 
-    def get(self, request, *args, **kwargs):
-        conn = psycopg2.connect(dbname='lmmjpniy', user='lmmjpniy', password='xKzHUkcdr42O0se2nyMc-zhEVuggvBoj',
-                                host='rajje.db.elephantsql.com')
-        with conn.cursor() as cursor:
-            cursor.execute('SELECT * FROM test_table')
-            line = '\n'.join([str(row) for row in cursor])
-        return Response(data=line)
+    def post(self, request, *args, **kwargs):
+        username = request.data.get('username', None)
+        password = request.data.get('password', None)
+        if (username and password) is not None:
+            user = authenticate(username=username, password=password)
+            if user is not None:
+                token, _ = Token.objects.get_or_create(user=user)
+                return Response({'token': token.key})
+        return Response({'details': 'Credentials are invalid.'}, status=status.HTTP_400_BAD_REQUEST)

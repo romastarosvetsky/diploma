@@ -13,3 +13,6 @@ class Teacher(models.Model):
     patronymic = models.CharField(max_length=64, null=True, blank=True, verbose_name=_('Patronymic'))
     faculty = models.CharField(max_length=64, null=True, blank=True, verbose_name=_('Faculty'))
     department = models.CharField(max_length=64, null=True, blank=True, verbose_name=_('Department'))
+
+    def __str__(self):
+        return f"{self.surname} {self.name} {self.patronymic or ''}"

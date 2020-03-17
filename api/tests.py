@@ -22,7 +22,7 @@ class TestCreateLoadView(BaseTest):
             },
             'discipline': {
                 'name': 'Математика',
-                'semesters': [1, 2, 3]
+                'semester': 1
             },
             'jobs': [
                 {'id': 1, 'input_value': 25},
