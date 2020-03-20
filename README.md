@@ -36,6 +36,7 @@
   ```
     If teacher does not exists, it will be created automatically.
     If discipline does not exists it will be created automatically.
+    Talking about discipline's semester, semester with id=0 is semester that has started from 01-01-2019, 1 is 01-09-2019 and so on.
     Jobs format have to include `id` is id of job instance, that used in system and input value.
     
     The return value is like:
